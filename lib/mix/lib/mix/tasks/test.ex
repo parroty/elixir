@@ -160,7 +160,12 @@ defmodule Mix.Tasks.Test do
     # Start cover after we load deps but before we start the app.
     cover =
       if opts[:cover] do
-        cover[:tool].start(Mix.Project.compile_path(project), cover)
+        if Mix.Project.umbrella?(Mix.Project.config) do
+          compile_paths = Enum.map(Mix.Dep.Umbrella.loaded, fn(x) -> "#{x.opts[:build]}/ebin" end)
+          cover[:tool].start(compile_paths, cover)
+        else
+          cover[:tool].start(Mix.Project.compile_path(project), cover)
+        end
       end
 
     # Start the app and configure exunit with command line options
